@@ -9,4 +9,4 @@ Con el resultado del proyecto sera posible observar de
 una manera muy aproximada cuando y a que ritmo se 
 producen interrupciones, excepciones, traps, y muy en 
 concreto interruciones de reloj, captura de teclas, 
-accesos al disco y llamadas al sistema. 
+accesos al disco y llamadas al sistema.    
