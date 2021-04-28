@@ -128,6 +128,7 @@ public:		// User declarations
 	void __fastcall pintarIntReloj ( void ) ;
 	void __fastcall pintarTecla ( void ) ;
 	void __fastcall pintarNumOpsTick ( void ) ;
+	void __fastcall saltarOperacion ( unsigned op ) ;
 
 	int __fastcall parse ( void ) ;
 
@@ -161,9 +162,6 @@ public:		// User declarations
 
 /*  off_seg [s] = desplazamiento del comienzo del segundo s en el fichero  */
 /*  off_tick[t] = desplazamiento del comienzo del tick    t en el fichero  */
-
-	char car ;
-	unsigned op ;
 
 	int numTickSel ;          /* numero (-1, 0, ...) del tick seleccionado */
 

@@ -900,6 +900,7 @@ void __fastcall TForm1::pintarIntReloj ( void )
 	C->Font->Style = TFontStyles() << fsBold ;
 //	C->TextOut(C->PenPos.x, C->PenPos.y, strIRQ[0]) ;	
 	C->TextOut(C->PenPos.x, C->PenPos.y, "0") ;	            /* por rapidez */
+	yActual += alto ;                                         /* avanzamos */
 }	
 //---------------------------------------------------------------------------
 
@@ -914,7 +915,7 @@ void __fastcall TForm1::pintarTecla ( void )
 		C->Font->Style = TFontStyles() << fsBold ;
 		C->MoveTo(xActual + 2, yActual);
 	   	C->TextOut(C->PenPos.x, C->PenPos.y, "M") ;           /* de MAPKBD */
-	    yActual += alto ;
+//	    yActual += alto ;                           /* se hace ya en parse */
     }
 				
 	while (FileRead(df_1, &scode, 1) == 0) { }            /* clock_counter */
@@ -974,9 +975,47 @@ void __fastcall TForm1::pintarNumOpsTick ( void )
 }	
 //---------------------------------------------------------------------------
 
+void __fastcall TForm1::saltarOperacion ( unsigned op )
+{
+    char car ;
+	switch (op)
+	{
+		case opEXC_00 : ;                       /* excepciones */
+		case opEXC_01 : ;
+		case opEXC_02 : ;
+		case opEXC_03 : ;
+		case opEXC_04 : ;
+		case opEXC_05 : ;
+		case opEXC_06 : ;
+		case opEXC_07 : ;
+		case opEXC_08 : ;
+		case opEXC_09 : ;
+		case opEXC_10 : ;
+		case opEXC_11 : ;
+		case opEXC_12 : ;
+		case opEXC_13 : ;
+		case opEXC_14 : ;
+		case opEXC_15 : ;
+		case opEXC_16 :
+		case opMAPKBD :                              /* mapkbd */
+			while (FileRead(df_1, &car, 1) == 0) { }
+			while (FileRead(df_1, &car, 1) == 0) { }
+			break ;
+		case opIDE :                                    /* ide */
+			for ( int i = 0 ; i < 16 ; i++ )
+				while (FileRead(df_1, &car, 1) == 0) { }
+			break ;
+		default : ;
+	}
+}
+
 int __fastcall TForm1::parse ( void )
 {
-
+	
+	static unsigned op ;                                         /* STATIC */
+ 
+    static char car ;                                            /* STATIC */ 
+	
 //  continuamos la ejecucion por donde habia quedado
 
 	switch (parserEntry) {
@@ -993,15 +1032,14 @@ parserEntry_0: ;
 //      se ha leído un byte op = opIRQ_00 (interrupcion del timer)
 //      comienzo de un nuevo tick
 
-		pintarSegundos() ;
+		pintarSegundos() ;          /* en su caso, si se cumple un segundo */
 		pintarLinea() ;
-		Contador++ ;                          /* nuevo tick */
+		Contador++ ;                                         /* nuevo tick */
 		yActual = yActual_0 ;
         pintarIntReloj() ;
-		yActual += alto ;                      /* avanzamos */
-		nOpsTick = 1 ;                    /* ops en el tick */
+		nOpsTick = 1 ;                  /* ops en el tick hasta el momento */
 
-//      bucle de lectura y pintado de las ops en ese tick   */
+//      bucle de lectura y pintado de las ops en ese tick   
 
 		do
 		{
@@ -1014,7 +1052,7 @@ parserEntry_1: ;
 //			while (FileRead(df_1, &car, 1) == 0)
 			{
 //				Application->ProcessMessages();
-				parserEntry = 1 ; /* para la siguiente activacion */
+				parserEntry = 1 ; /* para la siguiente activacion de parser */
 				return parserEntry ;
 			}
 			parserEntry = 0 ;
@@ -1022,11 +1060,13 @@ parserEntry_1: ;
 			op = (unsigned)car ;
 
 			if (op == opIRQ_00) { }
-			else if (op <= opSVC_09)
+//			else if (op <= opSVC_09)
+//			else if (op <= opMAPKBD)
+			else if (op <= opIDE)
 			{
 				nOpsTick++ ;                            /* nueva operacion */
 
-				if (nOpsTick < 61)
+				if (nOpsTick < 61)                /* pintamos la operacion */
 				{
 					C->MoveTo(xActual + 2, yActual);
 
@@ -1056,17 +1096,35 @@ parserEntry_2: ;
 						C->Font->Style = TFontStyles() ;
 						C->TextOut(C->PenPos.x, C->PenPos.y, strEXC[op]) ;
 					}
-					else /* if (op <= opSVC_09) */ /* trap */
+					else if (op <= opSVC_09)                       /* trap */
 					{
 						setFont("Tahona", 12, clBlue) ;
 						C->Font->Style = TFontStyles() ;
 						C->TextOut(C->PenPos.x, C->PenPos.y, strSVC[op]) ;
 					}
+              		else if (op == opMAPKBD) 
+		  	        {
+				        pintarTecla() ;
+		        	}
+			        else if (op == opIDE)
+			        {
+				        for ( int j = 0 ; j < 16 ; j++ ) 
+					        while (FileRead(df_1, &car, 1) == 0) { } 
+				        setFont("Tahona", 12, clPurple) ;
+				        C->Font->Style = TFontStyles() << fsBold ;
+				        C->TextOut(C->PenPos.x, C->PenPos.y, "H") ;
+			        }					
 
-					yActual += alto ; /* avanzamos */
+					yActual += alto ;                         /* avanzamos */
 
 				}
-				else if (nOpsTick == 61) {
+				else /* (nOpsTick >= 61) */
+				{
+					saltarOperacion(op) ;
+				}
+
+				if (nOpsTick == 61)
+				{
 					setFont("Tahona", 12, clPurple) ;
 					C->Font->Style = TFontStyles() << fsBold ;
 					C->MoveTo(xActual + 2, yActual);
@@ -1082,10 +1140,7 @@ parserEntry_2: ;
 				}
 			}
 #if 1
-			else if (op == opMAPKBD)
-			{
-				pintarTecla() ;
-			}
+
 #if 0
 			else if (op == opINTHND) {
 				int irq ;
@@ -1122,14 +1177,14 @@ parserEntry_2: ;
 			}
 #endif
 
-#if 1
+#if 0
 			else if (op == opIDE) 
 			{
 				for ( int j = 0 ; j < 16 ; j++ ) {
 					while (FileRead(df_1, &car, 1) == 0) { } ;
 				}				
 			}	
-#else 
+#elif 0 
 			else if (op == opIDE) 
 			{
 				for ( int j = 0 ; j < 16 ; j++ ) {
