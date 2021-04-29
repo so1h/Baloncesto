@@ -6,8 +6,8 @@
 //---------------------------------------------------------------------------
 USEFORM("Main.cpp", Form1);
 USEFORM("ScrollSeg.cpp", Form3);
-USEFORM("Ir_a.cpp", Form2);
 USEFORM("sobre.cpp", Form9);
+USEFORM("Ir_a.cpp", Form2);
 //---------------------------------------------------------------------------
 int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {

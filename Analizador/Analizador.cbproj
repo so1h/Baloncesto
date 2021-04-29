@@ -64,8 +64,8 @@
         <UWP_CppLogo44>$(BDS)\bin\Artwork\Windows\UWP\cppreg_UwpDefault_44.png</UWP_CppLogo44>
         <UWP_CppLogo150>$(BDS)\bin\Artwork\Windows\UWP\cppreg_UwpDefault_150.png</UWP_CppLogo150>
         <SanitizedProjectName>Analizador</SanitizedProjectName>
-        <IncludePath>..\fda\usr\src\kernel\;$(IncludePath)</IncludePath>
-        <ILINK_LibraryPath>..\fda\usr\src\kernel\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <IncludePath>..\fda\usr\src\include\minix\;..\fda\usr\src\kernel\;$(IncludePath)</IncludePath>
+        <ILINK_LibraryPath>..\fda\usr\src\include\minix\;..\fda\usr\src\kernel\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <PackageImports>adortl;appanalytics;bcbie;bcbsmp;bindcomp;bindcompdbx;bindcompfmx;bindcompvcl;bindcompvclsmp;bindengine;CloudService;CustomIPTransport;DataSnapClient;DataSnapCommon;DataSnapConnectors;DatasnapConnectorsFreePascal;DataSnapFireDAC;DataSnapIndy10ServerTransport;DataSnapNativeClient;DataSnapProviderClient;DataSnapServer;DataSnapServerMidas;dbexpress;dbrtl;dbxcds;DbxClientDriver;DbxCommonDriver;DBXDb2Driver;DBXFirebirdDriver;DBXInformixDriver;DBXInterBaseDriver;DBXMSSQLDriver;DBXMySQLDriver;DBXOdbcDriver;DBXOracleDriver;DBXSqliteDriver;DBXSybaseASADriver;DBXSybaseASEDriver;dclZipForged27;dsnap;dsnapcon;dsnapxml;emsclient;emsclientfiredac;emsedge;emshosting;emsserverresource;FireDAC;FireDACADSDriver;FireDACASADriver;FireDACCommon;FireDACCommonDriver;FireDACCommonODBC;FireDACDb2Driver;FireDACDBXDriver;FireDACDSDriver;FireDACIBDriver;FireDACInfxDriver;FireDACMongoDBDriver;FireDACMSAccDriver;FireDACMSSQLDriver;FireDACMySQLDriver;FireDACODBCDriver;FireDACOracleDriver;FireDACPgDriver;FireDACSqliteDriver;FireDACTDataDriver;fmx;fmxase;fmxdae;fmxFireDAC;fmxobj;FMXTee;FmxTeeUI;IndyCore;IndyIPClient;IndyIPCommon;IndyIPServer;IndyProtocols;IndySystem;inet;inetdb;inetdbxpress;RESTBackendComponents;RESTComponents;rtl;soapmidas;soaprtl;soapserver;svn;Tee;TeeDB;TeeUI;tethering;vcl;vclactnband;vcldb;vcldsnap;vcledge;vclFireDAC;vclie;vclimg;VCLRESTComponents;VclSmp;vcltouch;vclwinx;vclx;vclZipForged27;xmlrtl;$(PackageImports)</PackageImports>
@@ -158,13 +158,16 @@
             <DependentOn>sobre.h</DependentOn>
             <BuildOrder>6</BuildOrder>
         </CppCompile>
+        <None Include="..\fda\usr\src\include\minix\com.h">
+            <BuildOrder>8</BuildOrder>
+        </None>
         <None Include="..\fda\usr\src\kernel\plotear.h">
             <BuildOrder>4</BuildOrder>
         </None>
         <FormResources Include="Main.dfm"/>
         <FormResources Include="ScrollSeg.dfm"/>
-        <FormResources Include="Ir_a.dfm"/>
         <FormResources Include="sobre.dfm"/>
+        <FormResources Include="Ir_a.dfm"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

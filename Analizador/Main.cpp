@@ -11,7 +11,9 @@
 
 #include "sobre.h"                                     /* Form9 (Sobre...) */
 
-#include "cmd.h"                                         /* mostrar_enlace */
+#include "cmd.h"
+
+#include "..\fda\usr/src/include/minix/com.h"                                  /* mostrar_enlace */
 
 #include "..\fda\usr\src\kernel\plotear.h"                /* opINT_00, ... */
 
@@ -1342,10 +1344,10 @@ void __fastcall TForm1::FormMouseDown(TObject *Sender, TMouseButton Button, TShi
 
 /*  actualizamos la barra de estado */
 
-	StatusBar1->Panels->Items[0]->Text =
-		String(L"  Seg  ") + IntToStr(seg) +
-		String(L"  Tick  ") + IntToStr(tick) +
-		String(L"  Ops  ") + IntToStr(100) ;
+//	StatusBar1->Panels->Items[0]->Text =
+//		String(L"  Seg  ") + IntToStr(seg) +
+//		String(L"  Tick  ") + IntToStr(tick) +
+//		String(L"  Ops  ") + IntToStr(100) ;
 
 	Panel1->Show() ;
 	Panel2->Hide() ;
@@ -1362,6 +1364,49 @@ void __fastcall TForm1::FormMouseDown(TObject *Sender, TMouseButton Button, TShi
 }
 //---------------------------------------------------------------------------
 
+String nombreAscii ( unsigned sc, char car )
+{
+	switch (sc & 0x7F)
+	{
+	case 0x00 : return "NUL" ;
+	case 0x01 : return "Esc" ;
+	case 0x0E : return "Back Space" ;
+	case 0x0F : return "Tab" ;
+	case 0x1C : return "Enter" ;
+	case 0x1D : return "Control" ;	
+	case 0x2A : return "Shift Izq" ;
+	case 0x36 : return "Shift Der" ;
+	case 0x38 : return "Alt" ; /* o AltGr si "esta presionado" E0 */
+	case 0x3A : return "Caps Lock" ;
+	case 0x3B : return "F1" ;
+	case 0x3C : return "F2" ;
+	case 0x3D : return "F3" ;
+	case 0x3E : return "F4" ;
+	case 0x3F : return "F5" ;
+	case 0x40 : return "F6" ;
+	case 0x41 : return "F7" ;
+	case 0x42 : return "F8" ;
+	case 0x43 : return "F9" ;
+	case 0x44 : return "F10" ;
+	case 0x45 : return "Num Lock" ;
+	case 0x47 : return "Inicio" ; 	
+	case 0x48 : return "Up" ;
+	case 0x49 : return "Re Pag" ;
+	case 0x4B : return "Izq" ;
+	case 0x4D : return "Der" ;
+	case 0x4F : return "Fin" ;
+	case 0x50 : return "Down" ;
+	case 0x51 : return "Av Pag" ;
+	case 0x52 : return "Insert" ;
+	case 0x53 : return "Supr" ;
+	case 0x57 : return "F11" ; /* 0x57 capturado, solo 0xD7 */
+	case 0x58 : return "F12" ; /* 0x58 capturado, solo 0xD8 */
+	case 0x60 : return "E0" ;  /* 0x60 capturado, solo 0xE0 */
+	default   : return ("\'" + (String)car + "\'") ;
+	}
+}
+//---------------------------------------------------------------------------
+
 int __fastcall TForm1::analizarTick ( int numTickSel )
 {
 	int df_3 = FileOpen(FileName, fmOpenRead | fmShareDenyNone) ;
@@ -1369,6 +1414,8 @@ int __fastcall TForm1::analizarTick ( int numTickSel )
 	int tamActual = FileSeek(df_size, 0, SEEK_END) ;
 
 	int op, i, j ;
+
+	int pos = 0 ; /* posicion del comienzo de linea */
 
 	unsigned sc ; /* scancode */
 
@@ -1380,13 +1427,22 @@ int __fastcall TForm1::analizarTick ( int numTickSel )
 
 	RichEdit1->Lines->Clear() ;
 
+    if (numTickSel == -1) {                  /* tratamos este caso a capon */
+    	RichEdit1->Lines->Add(
+//	    	String(L"") + 
+		    Format("\n%2d: RECEIVE ", 1)
+		) ;
+	    return 2 ;	
+	}	
+
 	i = 0 ;
 
 	RichEdit1->Lines->Add(
-//		String(L"") + 
 		Format("%2d:", i++) +
-		String(L" INT IRQ =  0 (TIMER) ")
+		String(" INT IRQ =  0 (TIMER) ")
 	) ;
+
+	pos += RichEdit1->Lines->Strings[i-1].Length() + 1 ;
 
 	while (FileSeek(df_3, 0, SEEK_CUR) < tamActual)
 	{
@@ -1404,33 +1460,38 @@ int __fastcall TForm1::analizarTick ( int numTickSel )
 		{
 			if (op == opIRQ_01)
 				RichEdit1->Lines->Add(
-//					String(L"") +
-					Format("%2d:", i++) +
+					Format("%2d:", i) +
 					Format(" INT IRQ =  1 (TECLADO) ")
+				) ;
+			else if (op == opIRQ_04)
+				RichEdit1->Lines->Add(
+					Format("%2d:", i) +
+					Format(" INT IRQ =  4 (RS232) ")
 				) ;
 			else if (op != opIRQ_14)
 				RichEdit1->Lines->Add(
-//					String(L"") +
-					Format("%2d:", i++) +
+					Format("%2d:", i) +
 					Format(" INT IRQ = %2d ", op)
 				) ;
 			else if (op == opIRQ_14)
 				RichEdit1->Lines->Add(
-//					String(L"") + 
-					Format("%2d:", i++) +
-					String(L" INT IRQ = 14 (HD) ")
+					Format("%2d:", i) +
+					String(" INT IRQ = 14 (HD) ")
 				) ;
 		}
 		else if (op <= opEXC_16)
 		{
 			while (FileRead(df_3, &car, 1) == 0) { }
-			i++ ;
+			RichEdit1->Lines->Add(
+				Format("%2d:", i) +
+				Format(" EXC %2d ERR = %d ", op, car)
+			) ;
 		}
 		else if (op <= opSVC_09)
 		{
-			str = 
-//			    String(L"") + 
-				Format("%2d: ", i++) ;
+			str =
+//			    String(L"") +
+				Format("%2d: ", i) ;
 			switch (op) {
 			case opSVC_00 : break ;
 			case opSVC_01 : str = str + "SEND        " ; break ;
@@ -1448,26 +1509,42 @@ int __fastcall TForm1::analizarTick ( int numTickSel )
 		}
 		else if (op == opMAPKBD)
 		{
-#if 1
+			String strAscii ;
+			String strI = IntToStr(i) ;
+			int dif = strI.Length() - 2 ;
+			if (dif < 0) dif = 0 ;
 			while (FileRead(df_3, &car, 1) == 0) { } ;
 			sc = 0x000000FF & (unsigned)car ;
 			while (FileRead(df_3, &car, 1) == 0) { } ;
-#else
-			FileRead(df_3, &car, 1) ;
-			sc = 0x000000FF & (unsigned)car ;
-			FileRead(df_3, &car, 1) ;
-#endif
-			i = i + 2 ;
+			strAscii = nombreAscii(sc, car) ;
 			RichEdit1->Lines->Add(
-//				String(L"") +
-				Format("%2d:", i++) +
-				Format(" MAPKBD SC = %s ASCII = \'%s\'",
-					ARRAYOFCONST((strHex[sc], car))
+				Format(
+					"%2d: MAPKBD sc: %s ascii: %s %s",
+					i, strHex[sc], strHex[car], strAscii
 				)
 			) ;
+			RichEdit1->SelStart = pos + 15 + dif ;
+			RichEdit1->SelLength = 2 ;
+			if (sc & 0x80)
+				RichEdit1->SelAttributes->Color = clBlack ; /* Rojo */
+			else
+				RichEdit1->SelAttributes->Color = clRed ; /* Gris */
+			RichEdit1->SelAttributes->Style <<= fsBold ;
+			RichEdit1->SelStart = pos + 25 + dif ;
+			RichEdit1->SelLength = 3 + strAscii.Length() ;
+			if (sc & 0x80)
+				RichEdit1->SelAttributes->Color = clBlack ; /* Rojo */
+			else
+				RichEdit1->SelAttributes->Color = clRed ; /* Gris */
+			RichEdit1->SelAttributes->Style <<= fsBold ;
 		}
 		else if (op == opIDE)
 		{
+			String strOp ;
+			String strI = IntToStr(i) ;
+			int dif = strI.Length() - 2 ;
+			if (dif < 0) dif = 0 ;
+			String strSector ;
 			struct trazaIDE {
 				unsigned int opcode ;                                          /* PP */
 				unsigned int sector ;                                          /* PP */
@@ -1478,21 +1555,39 @@ int __fastcall TForm1::analizarTick ( int numTickSel )
 			for ( j = 0 ; j < 16 ; j++ ) {
 				while (FileRead(df_3, &ptr[j], 1) == 0) { } ;
 			}
-			i = i + 16 ;
+			if (trazaIDE.opcode = DEV_GATHER)
+			   strOp = "R" ;
+			else if (trazaIDE.opcode = DEV_SCATTER)
+			   strOp = "W" ;
+			else
+			   strOp = "#" ;
 			RichEdit1->Lines->Add(
 //				String(L"") +
-				Format("%2d:", i++) +
-				Format(" IDE op = %d S = %d C = %d dma = %d",
+				Format("%2d:", i) +
+				Format(" IDE[%s] S: %d C: %d dma: %d",
 					ARRAYOFCONST((
-						trazaIDE.opcode,
+						strOp,
 						trazaIDE.sector,
 						trazaIDE.count,
 						trazaIDE.do_dma
 					))
 				)
 			) ;
+			strSector = IntToStr((int)trazaIDE.sector) ;
+			RichEdit1->SelStart = pos + 8 + dif ;
+			RichEdit1->SelLength = 1 ;
+			RichEdit1->SelAttributes->Color = clRed ; /* Gris */
+			RichEdit1->SelAttributes->Style <<= fsBold ;
+			RichEdit1->SelStart = pos + 14 + dif ;
+			RichEdit1->SelLength = strSector.Length() ;
+			RichEdit1->SelAttributes->Color = clRed ; /* Gris */
+			RichEdit1->SelAttributes->Style <<= fsBold ;
 		}
 		else { }
+
+		pos += RichEdit1->Lines->Strings[i].Length() + 1 ;
+
+		i = i + 1 ;
 	}
 	return (i + 1) ;
 }
@@ -1517,7 +1612,7 @@ void __fastcall TForm1::StatusBar1MouseDown(TObject *Sender, TMouseButton Button
 	if (!SBResizing)
 	{
 		if (X > (StatusBar1->Left + StatusBar1->Width) -
-					 StatusBar1->Panels->Items[2]->Width)
+				 StatusBar1->Panels->Items[2]->Width)
 		{
 			SBResizing = true ;
 			SBX = X ;
