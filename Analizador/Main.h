@@ -63,7 +63,8 @@ __published:	// IDE-managed Components
 	TPanel *Panel1;              /* para seleccionar un cierto tick */ 
 	TPanel *Panel2;              /* para contener StatusBar1 y RichEdit1 */  
 	TStatusBar *StatusBar1;      /* indica el numero de segundo y de tick seleccionado */ 
-	TRichEdit *RichEdit1;        /* detalla las operaciones dentro del tick seleccionado */
+	TRichEdit *RichEdit1;
+	TMenuItem *nOpsTick1;        /* detalla las operaciones dentro del tick seleccionado */
 //  Menus Clicks
 	void __fastcall Abrir1Click(TObject *Sender);
 	void __fastcall Cerrar1Click(TObject *Sender);
@@ -71,6 +72,7 @@ __published:	// IDE-managed Components
 	void __fastcall Inicio1Click(TObject *Sender);
 	void __fastcall SigOp1Click(TObject *Sender);
 	void __fastcall SigTick1Click(TObject *Sender);
+	void __fastcall AntTick1Click(TObject *Sender);
 	void __fastcall SigSeg1Click(TObject *Sender);
 	void __fastcall AntSeg1Click(TObject *Sender);
 	void __fastcall StartStop1Click(TObject *Sender);
@@ -112,6 +114,7 @@ __published:	// IDE-managed Components
 	void __fastcall usrsrcdriversttykeyboardc1Click(TObject *Sender);
 	void __fastcall usrsrcdriversttykeyboardc2Click(TObject *Sender);
 	void __fastcall FormKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
+	void __fastcall nOpsTick1Click(TObject *Sender);
 
 private:	// User declarations
 
@@ -184,6 +187,10 @@ public:		// User declarations
 	TRect Destino;
 	TImage* I ;                                      /* solo para abreviar */
 	TCanvas* C ;                                     /* solo para abreviar */
+	
+	bool actualizarScrollSeg ;     /* parser (pintarSegundos), irAlSegundo */
+
+	bool mostrarNumOpsTick ;
 
 };
 //---------------------------------------------------------------------------

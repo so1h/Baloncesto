@@ -13,7 +13,7 @@
 
 #include "cmd.h"
 
-#include "..\fda\usr/src/include/minix/com.h"                                  /* mostrar_enlace */
+#include "..\fda\usr/src/include/minix/com.h"            /* mostrar_enlace */
 
 #include "..\fda\usr\src\kernel\plotear.h"                /* opINT_00, ... */
 
@@ -73,6 +73,12 @@ __fastcall TForm1::TForm1(TComponent* Owner)
 	
 	C->Pen->Color = clRed;              /* lineas verticales de color rojo */
 	C->CopyMode = cmSrcCopy ;	                   /* modo de copia normal */
+	
+	actualizarScrollSeg = true ;          /* salvo en medio de movimientos */
+	
+	mostrarNumOpsTick = false ;
+	
+	nOpsTick1->Checked = false ;
 	
 	for ( i = 0 ; i < 16 ; i++ )                   /* "00", "01", ... "FF" */
 		for ( j = 0 ; j < 16 ; j++ )
@@ -194,7 +200,7 @@ void __fastcall TForm1::actualizarIndice ( void )
 		case opEXC_14 : ;
 		case opEXC_15 : ;
 		case opEXC_16 : 
-			while (FileRead(df_off, &car, 1) == 0) { }      /* cod. error 1B */
+			while (FileRead(df_off, &car, 1) == 0) { }    /* cod. error 1B */
 			posActual = posActual + 2 ;           /* opEXC_XX + cod. error */ 
 			break ;
 		case opSVC_00 : ;                   /* llamadas al sistema (TRAPS) */
@@ -342,7 +348,7 @@ void __fastcall TForm1::Inicio1Click(TObject *Sender)
 	FileSeek(df_1, 0, SEEK_SET) ;                     /* Esto es necesario */
 	Contador = 0 ;                                    /* Contador de ticks */
     nOpsTick = 1 ;                                  
-    yActual = yActual_0 + alto ;      /* primera operacion RECEIVE (clock) */                                
+    yActual = yActual_0 + alto ;      /* primera operacion RECEIVE (clock) */
 	paso = false ;
     Continuo1->Checked = false ; 
     parserEntry = 1 ;                      /* punto de entrada en parser() */
@@ -352,7 +358,7 @@ void __fastcall TForm1::Inicio1Click(TObject *Sender)
 	
 	for ( i = 0 ; i < 62 ; i++ ) parse() ;           /* mostramos 62 ticks */
 
-	Form2->Edit1->Text = IntToStr(0) ;                      /* Ir a tick 0 */ 
+	Form2->Edit1->Text = IntToStr(0) ;                      /* Ir a tick 0 */
 	Form3->ScrollBar1->Position = 0 ;   /* Barra de desplazamiento, tick 0 */
 
     numTickSel = -1 ;                          /* ningun tick seleccionado */
@@ -375,7 +381,7 @@ void __fastcall TForm1::irAlSegundo ( int seg )
 	    FileSeek(df_1, 0, SEEK_SET) ;                 /* Esto es necesario */
     	Contador = 0 ;                                /* Contador de ticks */
 		nOpsTick = 1 ;
-        yActual = yActual_0 + alto ;  /* primera operacion RECEIVE (clock) */                                
+        yActual = yActual_0 + alto ;  /* primera operacion RECEIVE (clock) */
 		paso = false ;
 		Continuo1->Checked = false ;
         parserEntry = 1 ;                  /* punto de entrada en parser() */
@@ -383,9 +389,11 @@ void __fastcall TForm1::irAlSegundo ( int seg )
 		C->Brush->Color = clBtnFace ;
 		C->Pen->Color = clRed ;
 
+        actualizarScrollSeg = false ;
 		for ( i = 0; i < 122 ; i++ ) parse() ;      /* mostramos 122 ticks */
+        actualizarScrollSeg = true ;
 
-    	Form2->Edit1->Text = IntToStr(1) ;                  /* Ir a tick 1 */ 
+    	Form2->Edit1->Text = IntToStr(1) ;                  /* Ir a tick 1 */
 	    Form3->ScrollBar1->Position = 1 ;   /* Barra de desplazam., tick 1 */
 	}
 	else if (seg < num_segs)
@@ -401,9 +409,11 @@ void __fastcall TForm1::irAlSegundo ( int seg )
 		C->Brush->Color = clBtnFace ;
 		C->Pen->Color = clRed ;
 
+        actualizarScrollSeg = false ;
 		for ( i = 0; i < 181 ; i++ ) parse() ;      /* mostramos 181 ticks */
+        actualizarScrollSeg = true ;
 
-    	Form2->Edit1->Text = IntToStr(seg) ;              /* Ir a tick seg */ 
+    	Form2->Edit1->Text = IntToStr(seg) ;              /* Ir a tick seg */
 	    Form3->ScrollBar1->Position = seg ; /* Barra de desplaz., tick seg */
 	}
 //	else /* if (seg >= num_segs) */
@@ -437,7 +447,9 @@ void __fastcall TForm1::Final1Click(TObject *Sender)
 	C->Brush->Color = clBtnFace ;
 	C->Pen->Color = clRed ;
 
+    actualizarScrollSeg = false ;
 	for ( i = 0 ; i < 241 ; i++ ) parse() ;         /* mostramos 241 ticks */
+    actualizarScrollSeg = true ;
 
 	seg_1 = num_segs-1 ;
 	if (seg_1 < 0) seg_1 = 0 ;
@@ -466,6 +478,8 @@ void __fastcall TForm1::SigOp1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+/* Ir al siguiente tick */
+
 void __fastcall TForm1::SigTick1Click(TObject *Sender)
 {
 	int seg_1 ;
@@ -479,6 +493,58 @@ void __fastcall TForm1::SigTick1Click(TObject *Sender)
 
 	Panel1->Hide() ;                   /* ocultamos el cursor de los ticks */
 	Panel2->Hide() ;	
+}
+//---------------------------------------------------------------------------
+
+/* Ir al anterior tick */
+
+void __fastcall TForm1::AntTick1Click(TObject *Sender)
+{
+	int seg = (Contador-2)/60 ;
+	int tick = (Contador-2) % 60 ;
+
+	if (seg == 0)
+		Inicio1Click(Sender) ;
+	else if (seg == 1)
+	{	
+		Inicio1Click(Sender) ;
+
+		C->Brush->Color = clBtnFace ;
+		C->Pen->Color = clRed ;
+
+        actualizarScrollSeg = false ;
+		for ( int i = 0 ; i < tick ; i++ ) parse() ;   /* mostramos ticks */
+        actualizarScrollSeg = true ;
+
+    	Form2->Edit1->Text = IntToStr(seg) ;              /* Ir a tick seg */
+	    Form3->ScrollBar1->Position = seg ; /* Barra de desplaz., tick seg */
+
+    	Panel1->Hide() ;               /* ocultamos el cursor de los ticks */
+	    Panel2->Hide() ;	
+	}	
+	else
+	{
+    	borrar() ;                            /* Borra el Canvas de Image1 */
+		FileSeek(df_1, off_seg[seg-2]+1, SEEK_SET) ;
+		Contador = (seg-2)*60 ;
+		nOpsTick = 1 ;
+		paso = false ;
+		Continuo1->Checked = false ;
+		parserEntry = 0 ;                  /* punto de entrada en parser() */
+
+		C->Brush->Color = clBtnFace ;
+		C->Pen->Color = clRed ;
+
+        actualizarScrollSeg = false ;
+		for ( int i = 0 ; i < 121 + tick ; i++ ) parse() ;   /* mostramos ticks */
+        actualizarScrollSeg = true ;
+
+    	Form2->Edit1->Text = IntToStr(seg) ;              /* Ir a tick seg */
+	    Form3->ScrollBar1->Position = seg ; /* Barra de desplaz., tick seg */
+
+    	Panel1->Hide() ;               /* ocultamos el cursor de los ticks */
+	    Panel2->Hide() ;		
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -860,11 +926,14 @@ void __fastcall TForm1::pintarSegundos ( void )
 
 		C->TextOut(xSegs, ySegs, Format("%d", segundos)) ;
 
-		if (num_segs > 0)
-			Form3->ScrollBar1->Position =
-				((segundos*Form3->ScrollBar1->Max)/num_segs) ;
-		else
-			Form3->ScrollBar1->Position = 0 ;
+        if (actualizarScrollSeg)                   /* modificar ScrollBar1 */ 
+		{	
+		    if (num_segs > 0)
+			    Form3->ScrollBar1->Position =
+				    ((segundos*Form3->ScrollBar1->Max)/num_segs) ;
+		    else
+			    Form3->ScrollBar1->Position = 0 ;
+		}	
 	}
 }
 //---------------------------------------------------------------------------
@@ -1020,7 +1089,8 @@ int __fastcall TForm1::parse ( void )
 	
 //  continuamos la ejecucion por donde habia quedado
 
-	switch (parserEntry) {
+	switch (parserEntry) 
+	{
 	case 1 : goto parserEntry_1 ;
 	case 2 : goto parserEntry_2 ;
 	default : ; /* goto parserEntry_0 */
@@ -1122,7 +1192,15 @@ parserEntry_2: ;
 				}
 				else /* (nOpsTick >= 61) */
 				{
-					saltarOperacion(op) ;
+                    if (mostrarNumOpsTick)
+     					saltarOperacion(op) ;
+                    else 					
+					{	
+					    if (Contador < (num_ticks-1))
+						    FileSeek(df_1, off_tick[Contador+1], SEEK_SET) ;
+					    else 							
+     					    saltarOperacion(op) ;
+					}	
 				}
 
 				if (nOpsTick == 61)
@@ -1141,8 +1219,6 @@ parserEntry_2: ;
 					return parserEntry ;
 				}
 			}
-#if 1
-
 #if 0
 			else if (op == opINTHND) {
 				int irq ;
@@ -1178,33 +1254,14 @@ parserEntry_2: ;
 				C->TextOut(C->PenPos.x, C->PenPos.y, "X") ;
 			}
 #endif
-
-#if 0
-			else if (op == opIDE) 
-			{
-				for ( int j = 0 ; j < 16 ; j++ ) {
-					while (FileRead(df_1, &car, 1) == 0) { } ;
-				}				
-			}	
-#elif 0 
-			else if (op == opIDE) 
-			{
-				for ( int j = 0 ; j < 16 ; j++ ) {
-					while (FileRead(df_1, &car, 1) == 0) { } ;
-				}
-				setFont("Tahona", 12, clPurple) ;
-				C->Font->Style = TFontStyles() << fsBold ;
-				C->TextOut(C->PenPos.x, C->PenPos.y, "H") ;
-			}
-#endif
-			
-#endif
-
 		}
 		while (op != opIRQ_00) ;
 
-		if (nOpsTick >= 61)
-			pintarNumOpsTick() ;
+        if (mostrarNumOpsTick)
+		{	
+		    if (nOpsTick >= 61)
+			    pintarNumOpsTick() ;
+		}	
 
 		C->CopyRect(Destino, C, Origen);
 
@@ -1702,10 +1759,53 @@ void __fastcall TForm1::usrsrcdriversttykeyboardc2Click(TObject *Sender)
 void __fastcall TForm1::FormKeyDown(TObject *Sender, WORD &Key, TShiftState Shift)
 
 {
-	if (Key == vkEscape) {                 /* ocultamos el cursor de ticks */
+	if (FileName == "") return ;
+	switch (Key)
+	{
+	case vkEscape :			               /* ocultamos el cursor de ticks */
 		Panel1->Hide() ;
-        Panel2->Hide() ;
+		Panel2->Hide() ;
+		break ;
+    case vkHome :                              /* nos movemos al principio */
+		Inicio1Click(this) ;
+	    break ; 
+    case vkEnd :                                   /* nos movemos al final */
+		Final1Click(this) ;
+	    break ; 
+    case vkDown :                    /* nos movemos una operacion adelante */
+		SigOp1Click(this) ;
+	    break ; 
+    case vkRight :
+		if (Shift.Contains(ssCtrl))
+			SigSeg1Click(this) ;    /* nos movemos un segundo a la derecha */
+		else
+			SigTick1Click(this) ;      /* nos movemos un tick a la derecha */
+		break ;
+	case vkLeft :
+		if (Shift.Contains(ssCtrl))
+			AntSeg1Click(this) ;  /* nos movemos un segundo a la izquierda */
+        else  
+		    AntTick1Click(this) ;    /* nos movemos un tick a la izquierda */
+	    break ; 
+	    break ; 
+	default: ;
 	}
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::nOpsTick1Click(TObject *Sender)
+{
+	if (nOpsTick1->Checked) 
+	{	
+		mostrarNumOpsTick = false ;
+		nOpsTick1->Checked = false ;
+	}
+	else
+	{
+        mostrarNumOpsTick = true ;
+		nOpsTick1->Checked = true ;
+	}	
 }
 //---------------------------------------------------------------------------
 

@@ -814,9 +814,5 @@ object Form3: TForm3
     TabOrder = 1
     OnChange = ScrollBar1Change
     OnScroll = ScrollBar1Scroll
-    ExplicitLeft = -2
-    ExplicitTop = -2
-    ExplicitWidth = 674
-    ExplicitHeight = 69
   end
 end

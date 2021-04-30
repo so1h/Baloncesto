@@ -213,6 +213,10 @@ object Form1: TForm1
         ShortCut = 16470
         OnClick = ScrollSeg1Click
       end
+      object nOpsTick1: TMenuItem
+        Caption = 'nOpsTick'
+        OnClick = nOpsTick1Click
+      end
     end
     object Ayuda1: TMenuItem
       Caption = 'Ayuda'

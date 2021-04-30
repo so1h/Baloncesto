@@ -52,7 +52,8 @@ void __fastcall TForm3::ScrollBar1Scroll(TObject *Sender, TScrollCode ScrollCode
 						   Pos = ScrollBar1->Max ;
 					   ScrollPos = Pos ;
 					   Form1->irAlSegundo(ScrollPos) ; break ;
-	case scPosition  : Form1->irAlSegundo(ScrollPos) ; break ;
+	case scPosition  : Form1->irAlSegundo(ScrollPos) ; 
+					   break ;
 	case scTrack     : break ;
 	case scTop       : break ;
 	case scBottom    : break ;
