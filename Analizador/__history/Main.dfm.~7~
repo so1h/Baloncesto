@@ -215,7 +215,6 @@ object Form1: TForm1
       end
       object nOpsTick1: TMenuItem
         Caption = 'nOpsTick'
-        ShortCut = 16462
         OnClick = nOpsTick1Click
       end
     end
@@ -256,7 +255,7 @@ object Form1: TForm1
   object OpenDialog1: TOpenDialog
     DefaultExt = 'bin'
     FileName = 'Y:\log_e9.bin'
-    Filter = 'bin|*.bin|all|*'
+    Filter = 'bin|*.bin'
     InitialDir = 'Y:\'
     Left = 104
     Top = 16

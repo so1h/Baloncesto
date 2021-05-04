@@ -215,7 +215,6 @@ object Form1: TForm1
       end
       object nOpsTick1: TMenuItem
         Caption = 'nOpsTick'
-        ShortCut = 16462
         OnClick = nOpsTick1Click
       end
     end

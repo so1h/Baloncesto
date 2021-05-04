@@ -1687,6 +1687,7 @@ void __fastcall TForm1::StatusBar1MouseDown(TObject *Sender, TMouseButton Button
 				Form1, Button, Shift,
 				Panel2->Left + ancho/2, yLine
 			) ;
+			Mouse->SetCursorPos(TPoint(100, 100)) ;
             Panel2->Show() ;
 		}
 	}
