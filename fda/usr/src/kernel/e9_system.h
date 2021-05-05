@@ -48,6 +48,10 @@ void u9_str ( char * str ) ;             /* escribe str por el puerto 0xE9 */
 
 void u9_raw ( char * ptr, unsigned l ) ;       /* escribe l bytes por 0xE9 */
 
+void u9_raw_cc ( char * ptr, unsigned l ) ;    /* escribe l bytes por 0xE9 */
+
+/* u9_raw_cc escribe ademas los dos bytes correspondientes a clock_counter */
+
 void u9_int ( int n ) ;                    /* escribe n por el puerto 0xE9 */
 
 void u9_hex ( unsigned n, unsigned ancho ) ;        /* escribe n en hexad. */

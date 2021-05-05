@@ -135,6 +135,8 @@ public:		// User declarations
 
 	int __fastcall parse ( void ) ;
 
+	int __fastcall microsegs ( int numTickSel, int clock_counter ) ;
+
 	int __fastcall analizarTick ( int numTickSel ) ;
 //
 #if 0

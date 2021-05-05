@@ -161,12 +161,18 @@
         <None Include="..\fda\usr\src\include\minix\com.h">
             <BuildOrder>8</BuildOrder>
         </None>
+        <None Include="..\fda\usr\src\include\minix\config.h">
+            <BuildOrder>10</BuildOrder>
+        </None>
+        <None Include="..\fda\usr\src\include\minix\const.h">
+            <BuildOrder>9</BuildOrder>
+        </None>
         <None Include="..\fda\usr\src\kernel\plotear.h">
             <BuildOrder>4</BuildOrder>
         </None>
-        <FormResources Include="Main.dfm"/>
         <FormResources Include="ScrollSeg.dfm"/>
         <FormResources Include="sobre.dfm"/>
+        <FormResources Include="Main.dfm"/>
         <FormResources Include="Ir_a.dfm"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

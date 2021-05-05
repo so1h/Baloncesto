@@ -25,7 +25,7 @@
 #include "../../kernel/proc.h"
 
 #include "../../kernel/plotear.h"                     /* opMAPKBD */ /* PP */
-#include "../../kernel/e9_system.h"                     /* e9_raw */ /* PP */
+#include "../../kernel/e9_system.h"          /* u9_raw, u9_raw_cc */ /* PP */
 
 int irq_hook_id = -1;
 int aux_irq_hook_id = -1;
@@ -665,10 +665,24 @@ int scode;			/* scan code of key just struck or released */
 	
 	ch = map_key(scode &= ASCII_MASK); 		  /* map to ASCII */    
 
-    str[0] = opMAPKBD ;                                                /* PP */
-    str[1] = scode0 & 0x000000FF ;                                     /* PP */
-    str[2] = ch     & 0x000000FF ;                                     /* PP */
-    u9_raw(str, 3) ;                                                   /* PP */ 
+    if (scode0 != 0x1C)         /* no corresponde a presionar Enter */ /* PP */
+	{	                                                               /* PP */
+      str[0] = opMAPKBD ;                                              /* PP */
+      str[1] = scode0 & 0x000000FF ;                                   /* PP */
+      str[2] = ch     & 0x000000FF ;                                   /* PP */
+      u9_raw(str, 3) ;                                                 /* PP */
+	}                                                                  /* PP */
+	else              /* se ha presionado la tecla Enter => comando */ /* PP */
+	{	                                                               /* PP */
+/*    unsigned clock_counter = read_clock() ; */ /* modo usuario !! */ /* PP */	
+      str[0] = opMAPKBD ;                                              /* PP */
+      str[1] = scode0               & 0x000000FF ;                     /* PP */
+      str[2] = ch                   & 0x000000FF ;                     /* PP */
+/*	  str[3] = clock_counter        & 0x000000FF ; */       /* low  */ /* PP */
+/*	  str[4] = (clock_counter >> 8) & 0x000000FF ; */       /* high */ /* PP */ 
+/*    u9_raw(str, 5) ; */                                              /* PP */ 
+      u9_raw_cc(str, 3) ;                                              /* PP */ 
+	}                                                                  /* PP */	
   }                                                                    /* PP */
 #endif
   

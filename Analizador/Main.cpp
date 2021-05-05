@@ -14,6 +14,8 @@
 #include "cmd.h"
 
 #include "..\fda\usr\src\include\minix\com.h"            /* mostrar_enlace */
+#include "..\fda\usr\src\include\minix\config.h"                   /* CHIP */
+#include "..\fda\usr\src\include\minix\const.h"                      /* HZ */
 
 #include "..\fda\usr\src\kernel\plotear.h"                /* opINT_00, ... */
 
@@ -132,6 +134,8 @@ void __fastcall TForm1::actualizarIndice ( void )
 
     char car ;
 	
+	unsigned sc ;                                              /* scancode */
+	
 /*  posActual es la posicion actual de procesamiento del fichero para la   */
 /*  obtencion de los indices.                                              */
 /*                                                                         */ 
@@ -216,9 +220,18 @@ void __fastcall TForm1::actualizarIndice ( void )
 		    posActual++ ;                                   /* opSVC_XX 1B */
 		    break ;
 		case opMAPKBD : 
-			while (FileRead(df_off, &car, 1) == 0) { } ;     /* scancode   */
-			while (FileRead(df_off, &car, 1) == 0) { } ;     /* car. ascii */
-			posActual = posActual + 3 ; /* opMAPKBD + scancode + car ascii */
+			while (FileRead(df_off, &car, 1) == 0) { }       /* scancode   */
+			sc = (unsigned)car ;
+			while (FileRead(df_off, &car, 1) == 0) { }       /* car. ascii */
+			if (sc != 0x1C)    
+    			posActual = posActual + 3 ; /* opMAPKBD + scancode + car ascii */
+            else                                                  /* Enter */
+            {
+			    while (FileRead(df_off, &car, 1) == 0) { } /* clock_counter low  */
+			    while (FileRead(df_off, &car, 1) == 0) { } /* clock_counter high */	
+    			posActual = posActual + 5 ; /* opMAPKBD + scancode + car ascii */
+//                                                          /* + clock_counter */			
+			}	
 			break ;
 		case opIDE :                                         /* opcode  4B */
 			for ( int i = 0 ; i < 16 ; i++ )                 /* sector  4B */
@@ -978,7 +991,8 @@ void __fastcall TForm1::pintarIntReloj ( void )
 void __fastcall TForm1::pintarTecla ( void ) 
 {
 	unsigned char scode ;                                    /* scancode   */
-	char ch ;                                                /* ascii char */  
+	char ch ;
+	char car ;                                              /* ascii char */
 
 	if (nOpsTick < 61) 
 	{	
@@ -989,8 +1003,13 @@ void __fastcall TForm1::pintarTecla ( void )
 //	    yActual += alto ;                           /* se hace ya en parse */
     }
 				
-	while (FileRead(df_1, &scode, 1) == 0) { }            /* clock_counter */
-	while (FileRead(df_1, &ch   , 1) == 0) { }            /* clock_counter */
+	while (FileRead(df_1, &scode, 1) == 0) { }                 /* scancode */
+	while (FileRead(df_1, &ch   , 1) == 0) { }               /* ascii char */
+	if (scode == 0x1C)       /* se ha presionado la tecla Enter => comando */
+	{
+		while (FileRead(df_1, &car, 1) == 0) { } ;   /* clock_counter low  */
+		while (FileRead(df_1, &car, 1) == 0) { } ;   /* clock_counter high */
+    }  		
 	C->Font->Name = "Tahona" ;
 	if (scode & 0x80)                                        /* liberacion */
 	{
@@ -1049,6 +1068,7 @@ void __fastcall TForm1::pintarNumOpsTick ( void )
 void __fastcall TForm1::saltarOperacion ( unsigned op )
 {
     char car ;
+	unsigned sc ;
 	switch (op)
 	{
 		case opEXC_00 : ;                       /* excepciones */
@@ -1068,11 +1088,17 @@ void __fastcall TForm1::saltarOperacion ( unsigned op )
 		case opEXC_14 : ;
 		case opEXC_15 : ;
 		case opEXC_16 :
-		case opMAPKBD :                              /* mapkbd */
-			while (FileRead(df_1, &car, 1) == 0) { }
-			while (FileRead(df_1, &car, 1) == 0) { }
+		case opMAPKBD :                                          /* mapkbd */
+			while (FileRead(df_1, &car, 1) == 0) { }           /* scancode */
+			sc = (unsigned)car ;
+			while (FileRead(df_1, &car, 1) == 0) { }         /* ascii char */
+	        if (sc == 0x1C)  /* se ha presionado la tecla Enter => comando */ 
+	        {
+				while (FileRead(df_1, &car, 1) == 0) { } ; /* clock_counter low  */
+		        while (FileRead(df_1, &car, 1) == 0) { } ; /* clock_counter high */
+            }  					
 			break ;
-		case opIDE :                                    /* ide */
+		case opIDE :                                                /* ide */
 			for ( int i = 0 ; i < 16 ; i++ )
 				while (FileRead(df_1, &car, 1) == 0) { }
 			break ;
@@ -1469,6 +1495,27 @@ String nombreAscii ( unsigned sc, char car )
 }
 //---------------------------------------------------------------------------
 
+/* definiciones tomadas de clock.c (HZ tomado de <minix/const.h>) */
+
+#define COUNTER_FREQ (2*TIMER_FREQ)   /* counter frequency using square wave */
+#define TIMER_COUNT ((unsigned) (TIMER_FREQ/HZ)) /* initial value for counter*/
+#define TIMER_FREQ  1193182L       /* clock frequency for timer in PC and AT */
+
+int __fastcall TForm1::microsegs ( int numTick, int clock_counter )
+{
+/*	
+	t = numTick + ((TIMER_COUNT-clock_counter)/TIMER_COUNT) ticks 	
+	1 tick = 1 seg / HZ = 1000000 useg / HZ 
+	t = (1000000 * (numTick + ((TIMER_COUNT-clock_counter)/TIMER_COUNT)))/HZ usegs
+    t = (1000000*(numTick+1))/HZ usegs -  
+        (1000000*clock_counter)/(TIMER_COUNT*HZ) usegs  	
+*/
+	return (1000000*(numTick+1))/HZ -
+	       (1000000*clock_counter)/(TIMER_COUNT*HZ) ;
+}
+
+//---------------------------------------------------------------------------
+
 int __fastcall TForm1::analizarTick ( int numTickSel )
 {
 	int df_3 = FileOpen(FileName, fmOpenRead | fmShareDenyNone) ;
@@ -1571,6 +1618,7 @@ int __fastcall TForm1::analizarTick ( int numTickSel )
 		}
 		else if (op == opMAPKBD)
 		{
+			String strLine ;
 			String strAscii ;
 			String strI = IntToStr(i) ;
 			int dif = strI.Length() - 2 ;
@@ -1579,12 +1627,22 @@ int __fastcall TForm1::analizarTick ( int numTickSel )
 			sc = 0x000000FF & (unsigned)car ;
 			while (FileRead(df_3, &car, 1) == 0) { } ;
 			strAscii = nombreAscii(sc, car) ;
-			RichEdit1->Lines->Add(
-				Format(
-					"%2d: MAPKBD sc: %s ascii: %s %s",
-					i, strHex[sc], strHex[car], strAscii
-				)
+			strLine = Format(
+				"%2d: MAPKBD sc: %s ascii: %s %s",
+				i, strHex[sc], strHex[car], strAscii
 			) ;
+			if (sc == 0x1C)  /* se ha presionado la tecla Enter => comando */ 
+			{
+				unsigned clock_counter ;
+    			while (FileRead(df_3, &car, 1) == 0) { } ;
+				clock_counter = (unsigned)car ;                    /* low  */
+	    		while (FileRead(df_3, &car, 1) == 0) { } ;
+				clock_counter += (((unsigned)car) << 8) ; 		   /* high */ 
+				strLine = strLine + " cc: " + IntToStr((int)clock_counter) 
+								  + " us: "
+								  + IntToStr(microsegs(numTickSel, clock_counter)) ;
+            }  				
+			RichEdit1->Lines->Add(strLine) ;
 			RichEdit1->SelStart = pos + 15 + dif ;
 			RichEdit1->SelLength = 2 ;
 			if (sc & 0x80)
