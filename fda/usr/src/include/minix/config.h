@@ -20,7 +20,7 @@
 /* The MACHINE (called _MINIX_MACHINE) setting can be done
  * in <minix/machine.h>.
  */
-#ifdef _MINIX                                        /* PP */
+#ifndef _Windows                                     /* PP */
 #include <minix/sys_config.h>
 #else                                                /* PP */
 #include "..\fda\usr\src\include\minix\sys_config.h" /* PP */                     /* HZ */
