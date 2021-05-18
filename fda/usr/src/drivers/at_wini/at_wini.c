@@ -1129,7 +1129,7 @@ PRIVATE int do_transfer(struct wini *wn, unsigned int precomp,
 	*((unsigned int *)&trazaIDE[ 5]) = sector ;                        /* PP */
 	*((unsigned int *)&trazaIDE[ 9]) = count ;                         /* PP */
 	*((unsigned int *)&trazaIDE[13]) = do_dma ;                        /* PP */
-    u9_raw_cc((char *)&trazaIDE, 17) ;                                         /* PP */ 
+    u9_raw_cc((char *)&trazaIDE, 17) ;                                          /* PP */ 
   }                                                                    /* PP */
 #endif
 
