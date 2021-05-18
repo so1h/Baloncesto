@@ -8,7 +8,10 @@
 #include "proc.h"                                  /* proc, campo p_memmap */
 
 #include "e9_system.h"        /* e9_car, e9_word, e9_dword, e9_str, e9_raw */
-
+   /* arreglar esto pues provoca una dependencia circular */
+   /* hacer dos ficheros e9_system.c y otra u9_system.c */
+   /* en el Makefile del kernel poner e9_sytem.o y en el de los drivers */
+   /* poner u9_system.o */ 
 #if 1                                                 /* tomado de clock.c */
 
 /* Clock parameters. */

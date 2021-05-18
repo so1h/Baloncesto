@@ -21,8 +21,8 @@
 #include <sys/ioc_disk.h>
 #include <ibm/pci.h>
 
-#include "../../kernel/plotear.h"                       /* opIDE  */ /* PP */
-#include "../../kernel/e9_system.h"                     /* e9_raw */ /* PP */
+#include "../../kernel/plotear.h"                    /* opIDE     */ /* PP */
+#include "../../kernel/e9_system.h"                  /* u9_raw_cc */ /* PP */
 
 #define ATAPI_DEBUG	    0	/* To debug ATAPI code. */
 
@@ -1129,7 +1129,7 @@ PRIVATE int do_transfer(struct wini *wn, unsigned int precomp,
 	*((unsigned int *)&trazaIDE[ 5]) = sector ;                        /* PP */
 	*((unsigned int *)&trazaIDE[ 9]) = count ;                         /* PP */
 	*((unsigned int *)&trazaIDE[13]) = do_dma ;                        /* PP */
-    u9_raw(&trazaIDE, 17) ;                                            /* PP */ 
+    u9_raw_cc((char *)&trazaIDE, 17) ;                                         /* PP */ 
   }                                                                    /* PP */
 #endif
 

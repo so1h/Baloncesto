@@ -234,10 +234,12 @@ void __fastcall TForm1::actualizarIndice ( void )
 			}	
 			break ;
 		case opIDE :                                         /* opcode  4B */
-			for ( int i = 0 ; i < 16 ; i++ )                 /* sector  4B */
-				while (FileRead(df_off, &car, 1) == 0) { } ; /* count   4B */	
-            posActual = posActual + 17 ;				     /* do_dma  4B */
-			break ;                                          /* total  16B */
+//			for ( int i = 0 ; i < 16 ; i++ )                 /* sector  4B */
+			for ( int i = 0 ; i < (16 + 2) ; i++ )                 /* sector  4B */
+				while (FileRead(df_off, &car, 1) == 0) { } ; /* count   4B */
+//          posActual = posActual + 17 ;				     /* do_dma  4B */
+			posActual = posActual + 17 + 2 ;				 /* cc      2B */
+			break ;                                          /* total  18B */
 		default : ;
 		    Application->MessageBox (
 				L"Tipo de traza incorrecto",
@@ -1095,11 +1097,12 @@ void __fastcall TForm1::saltarOperacion ( unsigned op )
 	        if (sc == 0x1C)  /* se ha presionado la tecla Enter => comando */ 
 	        {
 				while (FileRead(df_1, &car, 1) == 0) { } ; /* clock_counter low  */
-		        while (FileRead(df_1, &car, 1) == 0) { } ; /* clock_counter high */
-            }  					
+				while (FileRead(df_1, &car, 1) == 0) { } ; /* clock_counter high */
+			}
 			break ;
 		case opIDE :                                                /* ide */
-			for ( int i = 0 ; i < 16 ; i++ )
+//			for ( int i = 0 ; i < 16 ; i++ )
+			for ( int i = 0 ; i < 16 + 2 ; i++ )     /* cc */
 				while (FileRead(df_1, &car, 1) == 0) { }
 			break ;
 		default : ;
@@ -1206,8 +1209,9 @@ parserEntry_2: ;
 		        	}
 			        else if (op == opIDE)
 			        {
-				        for ( int j = 0 ; j < 16 ; j++ ) 
-					        while (FileRead(df_1, &car, 1) == 0) { } 
+//						for ( int j = 0 ; j < 16 ; j++ )
+						for ( int j = 0 ; j < (16 + 2) ; j++ )
+							while (FileRead(df_1, &car, 1) == 0) { }
 				        setFont("Tahona", 12, clPurple) ;
 				        C->Font->Style = TFontStyles() << fsBold ;
 				        C->TextOut(C->PenPos.x, C->PenPos.y, "H") ;
@@ -1670,9 +1674,11 @@ int __fastcall TForm1::analizarTick ( int numTickSel )
 				unsigned int sector ;                                          /* PP */
 				unsigned int count ;                                           /* PP */
 				unsigned int do_dma ;
+				short    int cc ;
 			} trazaIDE ;
 			char * ptr = (char *)&trazaIDE ;											 /* PP */
-			for ( j = 0 ; j < 16 ; j++ ) {
+//			for ( j = 0 ; j < 16 ; j++ ) {
+			for ( j = 0 ; j < (16 + 2) ; j++ ) {
 				while (FileRead(df_3, &ptr[j], 1) == 0) { } ;
 			}
 			if (trazaIDE.opcode = DEV_GATHER)
@@ -1684,12 +1690,13 @@ int __fastcall TForm1::analizarTick ( int numTickSel )
 			RichEdit1->Lines->Add(
 //				String(L"") +
 				Format("%2d:", i) +
-				Format(" IDE[%s] S: %d C: %d dma: %d",
+				Format(" IDE[%s] S: %d C: %d dma: %d %d",
 					ARRAYOFCONST((
 						strOp,
 						trazaIDE.sector,
 						trazaIDE.count,
-						trazaIDE.do_dma
+                        trazaIDE.do_dma,
+						trazaIDE.cc
 					))
 				)
 			) ;
