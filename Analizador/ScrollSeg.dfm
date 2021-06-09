@@ -791,6 +791,17 @@ object Form3: TForm3
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 13
+  object ScrollBar1: TScrollBar
+    Left = 0
+    Top = 2
+    Width = 680
+    Height = 34
+    Align = alClient
+    PageSize = 0
+    TabOrder = 0
+    OnChange = ScrollBar1Change
+    OnScroll = ScrollBar1Scroll
+  end
   object Panel1: TPanel
     Left = 0
     Top = 0
@@ -802,17 +813,6 @@ object Form3: TForm3
     Constraints.MaxHeight = 2
     Constraints.MinHeight = 2
     ParentBackground = False
-    TabOrder = 0
-  end
-  object ScrollBar1: TScrollBar
-    Left = 0
-    Top = 2
-    Width = 680
-    Height = 34
-    Align = alClient
-    PageSize = 0
     TabOrder = 1
-    OnChange = ScrollBar1Change
-    OnScroll = ScrollBar1Scroll
   end
 end

@@ -703,6 +703,7 @@ void __fastcall TForm1::Frecuencia45Hz1Click(TObject *Sender)
 	 Frecuencia240Hz1->Checked = false ;
 	 Frecuencia480Hz1->Checked = false ;
 	 Frecuencia960Hz1->Checked = false ;
+	 Continuo1       ->Checked = false ;
 }
 
 //---------------------------------------------------------------------------
@@ -1514,8 +1515,16 @@ int __fastcall TForm1::microsegs ( int numTick, int clock_counter )
     t = (1000000*(numTick+1))/HZ usegs -  
         (1000000*clock_counter)/(TIMER_COUNT*HZ) usegs  	
 */
+/*
 	return (1000000*(numTick+1))/HZ -
 	       (1000000*clock_counter)/(TIMER_COUNT*HZ) ;
+*/
+
+	return (int)(
+	             ((Int64)1000000*(Int64)(numTick+1))/(Int64)HZ -
+	             ((Int64)1000000*(Int64)clock_counter)/(Int64)(TIMER_COUNT*HZ)
+    ) ;
+		     
 }
 
 //---------------------------------------------------------------------------
@@ -1783,7 +1792,7 @@ void __fastcall TForm1::StatusBar1MouseUp(TObject *Sender, TMouseButton Button, 
 
 void __fastcall TForm1::Sobre1Click(TObject *Sender)
 {
-    Form9->Show() ;
+    Form4->Show() ;
 }
 //---------------------------------------------------------------------------
 
@@ -1880,4 +1889,5 @@ void __fastcall TForm1::nOpsTick1Click(TObject *Sender)
 	}	
 }
 //---------------------------------------------------------------------------
+
 

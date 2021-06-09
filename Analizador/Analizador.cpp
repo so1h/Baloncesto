@@ -4,10 +4,10 @@
 #pragma hdrstop
 #include <tchar.h>
 //---------------------------------------------------------------------------
-USEFORM("ScrollSeg.cpp", Form3);
-USEFORM("sobre.cpp", Form9);
 USEFORM("Main.cpp", Form1);
 USEFORM("Ir_a.cpp", Form2);
+USEFORM("ScrollSeg.cpp", Form3);
+USEFORM("sobre.cpp", Form4);
 //---------------------------------------------------------------------------
 int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {
@@ -18,7 +18,7 @@ int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 		Application->CreateForm(__classid(TForm1), &Form1);
 		Application->CreateForm(__classid(TForm2), &Form2);
 		Application->CreateForm(__classid(TForm3), &Form3);
-		Application->CreateForm(__classid(TForm9), &Form9);
+		Application->CreateForm(__classid(TForm4), &Form4);
 		Application->Run();
 	}
 	catch (Exception &exception)

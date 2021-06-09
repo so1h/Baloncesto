@@ -13,8 +13,8 @@
 class TForm3 : public TForm
 {
 __published:	// IDE-managed Components
-	TPanel *Panel1;
 	TScrollBar *ScrollBar1;
+	TPanel *Panel1;
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall ScrollBar1Change(TObject *Sender);
 	void __fastcall ScrollBar1Scroll(TObject *Sender, TScrollCode ScrollCode, int &ScrollPos);

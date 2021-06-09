@@ -10,7 +10,7 @@
 #include <Vcl.ExtCtrls.hpp>
 #include <Vcl.Imaging.jpeg.hpp>
 //---------------------------------------------------------------------------
-class TForm9 : public TForm
+class TForm4 : public TForm
 {
 __published:	// IDE-managed Components
 	TPanel *Panel1;
@@ -27,9 +27,9 @@ __published:	// IDE-managed Components
 	void __fastcall StaticText1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
-	__fastcall TForm9(TComponent* Owner);
+	__fastcall TForm4(TComponent* Owner);
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TForm9 *Form9;
+extern PACKAGE TForm4 *Form4;
 //---------------------------------------------------------------------------
 #endif

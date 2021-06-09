@@ -1,4 +1,4 @@
-object Form9: TForm9
+object Form4: TForm4
   Left = 0
   Top = 0
   BorderIcons = []
